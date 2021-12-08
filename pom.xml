@@ -247,16 +247,6 @@
     </dependencies>
 
     <build>
-        <!-- get application properties from the configuration server instead, comment out when running locally -->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <excludes>
-                    <exclude>application.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
 
         <plugins>
 
