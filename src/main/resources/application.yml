@@ -1,0 +1,51 @@
+application:
+  env: ${ENV}
+  input.topic: input-topic
+  success.output.topic: success-topic
+  failure.output.topic: failure-topic
+  state.store.cleanup: ${STATE_STORE_CLEANUP:false}
+  in.memory.state.stores: ${MEMORY_STORES:false}
+
+# Kafka Streams related properties
+kafka:
+  streams:
+    application.id: ${ENV}-pc-transform
+    acks: all
+    auto.reset.offset: earliest
+    # broker connection configuration
+    bootstrap.servers: ${KAFKA_BROKER_URL}
+    security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
+    sasl.mechanism: ${SASL_MECHANISM}
+    sasl.jaas.config: ${SASL_JAAS_CONFIG}
+    default.key.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
+    default.value.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
+    default.timestamp.extractor: org.apache.kafka.streams.processor.WallclockTimestampExtractor
+    default.deserialization.exception.handler: org.apache.kafka.streams.errors.LogAndFailExceptionHandler
+    default.production.exception.handler: org.apache.kafka.streams.errors.DefaultProductionExceptionHandler
+    # for changelog topics and repartition topics, match other topics to guarantee fault tolerance
+    replication.factor: ${REPLICATION_FACTOR:1}
+    request.timeout.ms: 60000
+    session.timeout.ms: 30000
+    processing.guarantee: at_least_once
+    retries: 2147483647
+    max.in.flight.requests.per.connection: 1
+    buffered.records.per.partition: 1000
+    commit.interval.ms: 5000
+    num.stream.threads: ${NUM_THREADS:1}
+    poll.ms: 100
+    cache.max.bytes.buffering: 10485760
+    # state store configuration
+    state.dir: ${STATE_DIR:/data/stores}
+    num.standby.replicas: ${NUM_STANDBY_REPLICAS:0}
+    min.insync.replicas: ${MIN_INSYNC_REPLICAS:0}
+    # schema registry configuration
+    schema.registry.url: ${SCHEMA_REGISTRY_URL}
+    schema.registry.auth: ${SCHEMA_REGISTRY_AUTH:false}
+    schema.cache.capacity: 2000
+    basic.auth.credentials.source: ${BASIC_AUTH_CRED_SOURCE}
+    basic.auth.user.info: ${BASIC_AUTH_USER_INFO}
+    key.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    topology.optimzation: all
+    #main.consumer.max.poll.interval.ms: 300000
+    #main.consumer.max.poll.records: 1000
