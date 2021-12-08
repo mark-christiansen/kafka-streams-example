@@ -317,7 +317,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Checkstyle is not currently used at Western National but might be a good addition in the future -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
