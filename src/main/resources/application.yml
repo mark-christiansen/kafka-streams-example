@@ -1,5 +1,4 @@
 application:
-  env: ${ENV}
   input.topic: input-topic
   success.output.topic: success-topic
   failure.output.topic: failure-topic
@@ -8,15 +7,23 @@ application:
 
 # Kafka Streams related properties
 kafka:
+  producer:
+    application.id: kstreams-example-error
+    bootstrap.servers: ${KAFKA_BROKER_URL}
+    security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
+    key.serializer: org.apache.kafka.common.serialization.StringSerializer
+    value.serializer: org.apache.kafka.common.serialization.StringSerializer
+    ssl.keystore.location: ${KEYSTORE_LOCATION}
+    ssl.keystore.password: ${KEYSTORE_PASSWORD}
+    ssl.truststore.location: ${TRUSTSTORE_LOCATION}
+    ssl.truststore.password: ${KEYSTORE_PASSWORD}
   streams:
-    application.id: ${ENV}-pc-transform
+    application.id: kstreams-example
     acks: all
     auto.reset.offset: earliest
     # broker connection configuration
     bootstrap.servers: ${KAFKA_BROKER_URL}
     security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
-    sasl.mechanism: ${SASL_MECHANISM}
-    sasl.jaas.config: ${SASL_JAAS_CONFIG}
     default.key.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
     default.value.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
     default.timestamp.extractor: org.apache.kafka.streams.processor.WallclockTimestampExtractor
@@ -47,5 +54,11 @@ kafka:
     key.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
     value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
     topology.optimzation: all
-    #main.consumer.max.poll.interval.ms: 300000
-    #main.consumer.max.poll.records: 1000
+    ssl.keystore.location: ${KEYSTORE_LOCATION}
+    ssl.keystore.password: ${KEYSTORE_PASSWORD}
+    ssl.truststore.location: ${TRUSTSTORE_LOCATION}
+    ssl.truststore.password: ${KEYSTORE_PASSWORD}
+    schema.registry.ssl.keystore.location: ${KEYSTORE_LOCATION}
+    schema.registry.ssl.keystore.password: ${KEYSTORE_PASSWORD}
+    schema.registry.ssl.truststore.location: ${TRUSTSTORE_LOCATION}
+    schema.registry.ssl.truststore.password: ${KEYSTORE_PASSWORD}

@@ -1,6 +1,7 @@
 package com.machrist.kafka.streams.util;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde;
@@ -16,6 +17,7 @@ public class SerdeCreator {
     private static final String SCHEMA_REGISTRY_AUTH = "schema.registry.auth";
     private static final String BASIC_AUTH_CREDENTIALS_SOURCE = "basic.auth.credentials.source";
     private static final String BASIC_AUTH_USER_INFO = "basic.auth.user.info";
+
 
     private final Properties kafkaProps;
     private final SchemaRegistryClient client;
@@ -50,6 +52,9 @@ public class SerdeCreator {
             serdeConfig.put(BASIC_AUTH_CREDENTIALS_SOURCE, kafkaProps.get(BASIC_AUTH_CREDENTIALS_SOURCE));
             serdeConfig.put(BASIC_AUTH_USER_INFO, kafkaProps.get(BASIC_AUTH_USER_INFO));
         }
+
+        serdeConfig.put("schema.registry.ssl", kafkaProps.get(BASIC_AUTH_CREDENTIALS_SOURCE));
+
         return serdeConfig;
     }
 }

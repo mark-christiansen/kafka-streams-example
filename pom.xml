@@ -280,9 +280,6 @@
                             <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                             <stringType>String</stringType>
                             <enableDecimalLogicalType>true</enableDecimalLogicalType>
-                            <imports>
-                                <!-- make sure the Avro schemas used by other schemas are imported first -->
-                            </imports>
                         </configuration>
                     </execution>
                 </executions>

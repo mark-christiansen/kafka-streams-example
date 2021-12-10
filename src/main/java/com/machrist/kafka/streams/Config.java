@@ -5,6 +5,7 @@ import com.machrist.kafka.streams.util.SerdeCreator;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.streams.Topology;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -24,7 +25,13 @@ public class Config {
 
     @Bean
     @ConfigurationProperties(prefix = "kafka.streams")
-    public Properties kafkaProperties() {
+    public Properties streamsProperties() {
+        return new Properties();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "kafka.producer")
+    public Properties producerProperties() {
         return new Properties();
     }
 
@@ -37,12 +44,25 @@ public class Config {
     @Bean
     public SchemaRegistryClient schemaRegistryClient() {
 
-        Properties kafkaProperties = kafkaProperties();
+        Properties kafkaProperties = streamsProperties();
+        if (kafkaProperties.get("ssl.keystore.location") != null) {
+            System.setProperty("javax.net.ssl.keyStore", (String) kafkaProperties.get("ssl.keystore.location"));
+        }
+        if (kafkaProperties.get("ssl.keystore.password") != null) {
+            System.setProperty("javax.net.ssl.keyStorePassword", (String) kafkaProperties.get("ssl.keystore.password"));
+        }
+        if (kafkaProperties.get("ssl.truststore.location") != null) {
+            System.setProperty("javax.net.ssl.trustStore", (String) kafkaProperties.get("ssl.truststore.location"));
+        }
+        if (kafkaProperties.get("ssl.truststore.password") != null) {
+            System.setProperty("javax.net.ssl.trustStorePassword", (String) kafkaProperties.get("ssl.truststore.password"));
+        }
+
         // pull out schema registry properties from kafka properties to pass to schema registry client
         Map<String, Object> schemaProperties = new HashMap<>();
         for (Map.Entry<Object, Object> entry : kafkaProperties.entrySet()) {
             String propertyName = (String) entry.getKey();
-            if (propertyName.startsWith("schema.registry.")) {
+            if (propertyName.startsWith("schema.registry.") || propertyName.startsWith("basic.auth.")) {
                 schemaProperties.put(propertyName, entry.getValue());
             }
         }
@@ -52,16 +72,16 @@ public class Config {
 
     @Bean
     public SerdeCreator serdeCreator() {
-        return new SerdeCreator(kafkaProperties(), schemaRegistryClient());
+        return new SerdeCreator(streamsProperties(), schemaRegistryClient());
     }
 
     @Bean
     public TopologyBuilder topologyBuilder() {
-        return new TopologyBuilder(applicationProperties(), serdeCreator());
+        return new TopologyBuilder(applicationProperties(), serdeCreator(), new KafkaProducer<>(producerProperties()));
     }
 
     @Bean
-    public StreamsLifecycle sStreamsLifecycle(ApplicationContext applicationContext) throws IOException {
+    public StreamsLifecycle streamsLifecycle(ApplicationContext applicationContext) {
 
         TopologyBuilder topologyBuilder = topologyBuilder();
 
@@ -69,7 +89,7 @@ public class Config {
         final boolean stateStoreCleanup = Boolean.parseBoolean(applicationProperties.getProperty("state.store.cleanup"));
         Topology topology = topologyBuilder.build(applicationProperties);
 
-        Properties kafkaProperties = kafkaProperties();
+        Properties kafkaProperties = streamsProperties();
         final String applicationId = kafkaProperties.getProperty("application.id");
         return new StreamsLifecycle(applicationId, topology, stateStoreCleanup, kafkaProperties);
     }
