@@ -19,14 +19,16 @@ import java.util.Properties;
 public class TestStreamHelper {
 
     private static final String INPUT_TOPIC = "input-topic";
-    private static final String SUCCESS_OUTPUT_TOPIC = "success-topic";
+    private static final String CUSTOMER_OUTPUT_TOPIC = "customer-topic";
+    private static final String ADDRESS_OUTPUT_TOPIC = "address-topic";
     private static final String FAILURE_OUTPUT_TOPIC = "failure-topic";
     private static final String BROKER_URL = "mock:9092";
 
     public Properties getApplicationProperties() {
         Properties appProps = new Properties();
         appProps.setProperty("input.topic", INPUT_TOPIC);
-        appProps.setProperty("success.output.topic", SUCCESS_OUTPUT_TOPIC);
+        appProps.setProperty("customer.output.topic", CUSTOMER_OUTPUT_TOPIC);
+        appProps.setProperty("address.output.topic", ADDRESS_OUTPUT_TOPIC);
         appProps.setProperty("failure.output.topic", FAILURE_OUTPUT_TOPIC);
         appProps.setProperty("state.store.cleanup", "true");
         appProps.setProperty("in.memory.state.stores", "true");
@@ -48,11 +50,15 @@ public class TestStreamHelper {
         TestInputTopic<String, String> inputTopic = testDriver.createInputTopic(INPUT_TOPIC,
                 inputSerdes.key.serializer(), inputSerdes.value.serializer());
 
-        KeyValue<Serde<String>, GenericAvroSerde> successOutputSerdes = getOutputSerdes(schemaRegistryUrl, schemaRegistry);
-        TestOutputTopic<String, GenericRecord> successOutputTopic = testDriver.createOutputTopic(
-                SUCCESS_OUTPUT_TOPIC, successOutputSerdes.key.deserializer(), successOutputSerdes.value.deserializer());
+        KeyValue<Serde<String>, GenericAvroSerde> customerOutputSerdes = getOutputSerdes(schemaRegistryUrl, schemaRegistry);
+        TestOutputTopic<String, GenericRecord> customerOutputTopic = testDriver.createOutputTopic(
+                CUSTOMER_OUTPUT_TOPIC, customerOutputSerdes.key.deserializer(), customerOutputSerdes.value.deserializer());
 
-        return new TestStream(testDriver, inputTopic, successOutputTopic, kafkaProducer);
+        KeyValue<Serde<String>, GenericAvroSerde> addressOutputSerdes = getOutputSerdes(schemaRegistryUrl, schemaRegistry);
+        TestOutputTopic<String, GenericRecord> addressOutputTopic = testDriver.createOutputTopic(
+                ADDRESS_OUTPUT_TOPIC, addressOutputSerdes.key.deserializer(), addressOutputSerdes.value.deserializer());
+
+        return new TestStream(testDriver, inputTopic, customerOutputTopic, addressOutputTopic, kafkaProducer);
     }
 
     private KeyValue<Serde<String>, Serde<String>> getInputSerdes() {

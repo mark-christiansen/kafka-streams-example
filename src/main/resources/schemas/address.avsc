@@ -6,10 +6,8 @@
     { "name": "id", "type": "string" },
     { "name": "addressLine1", "type": ["null", "string"] },
     { "name": "addressLine2", "type": ["null", "string"] },
-    { "name": "addressLine3", "type": ["null", "string"] },
     { "name": "city", "type": ["null", "string"] },
     { "name": "state", "type": ["null", "string"] },
-    { "name": "country", "type": ["null", "string"] },
     { "name": "postalCode", "type": ["null", "string"] }
   ]
 }

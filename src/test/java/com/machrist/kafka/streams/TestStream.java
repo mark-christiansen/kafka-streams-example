@@ -10,16 +10,19 @@ public class TestStream {
 
     private final TopologyTestDriver testDriver;
     private final TestInputTopic<String, String> inputTopic;
-    private final TestOutputTopic<String, GenericRecord> successOutputTopic;
+    private final TestOutputTopic<String, GenericRecord> customerOutputTopic;
+    private final TestOutputTopic<String, GenericRecord> addressOutputTopic;
     private final KafkaProducer<String, String> kafkaProducer;
 
     public TestStream(TopologyTestDriver testDriver,
                       TestInputTopic<String, String> inputTopic,
-                      TestOutputTopic<String, GenericRecord> successOutputTopic,
+                      TestOutputTopic<String, GenericRecord> customerOutputTopic,
+                      TestOutputTopic<String, GenericRecord> addressOutputTopic,
                       KafkaProducer<String, String> kafkaProducer) {
         this.testDriver = testDriver;
         this.inputTopic = inputTopic;
-        this.successOutputTopic = successOutputTopic;
+        this.customerOutputTopic = customerOutputTopic;
+        this.addressOutputTopic = addressOutputTopic;
         this.kafkaProducer = kafkaProducer;
     }
 
@@ -27,8 +30,12 @@ public class TestStream {
         return inputTopic;
     }
 
-    public TestOutputTopic<String, GenericRecord> getSuccessOutputTopic() {
-        return successOutputTopic;
+    public TestOutputTopic<String, GenericRecord> getCustomerOutputTopic() {
+        return customerOutputTopic;
+    }
+
+    public TestOutputTopic<String, GenericRecord> getAddressOutputTopic() {
+        return addressOutputTopic;
     }
 
     public KafkaProducer<String, String> getKafkaProducer() {

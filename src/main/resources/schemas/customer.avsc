@@ -5,6 +5,7 @@
   "fields": [
     { "name": "id", "type": "string" },
     { "name": "firstName", "type": ["null", "string"] },
-    { "name": "lastName", "type": ["null", "string"] }
+    { "name": "lastName", "type": ["null", "string"] },
+    { "name": "age", "type": ["null", "int"] }
   ]
 }

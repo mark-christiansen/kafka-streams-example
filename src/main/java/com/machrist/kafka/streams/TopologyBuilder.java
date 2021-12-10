@@ -7,9 +7,10 @@ import com.machrist.kafka.model.Customer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.util.Utf8;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -26,8 +27,13 @@ public class TopologyBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(TopologyBuilder.class);
 
+    private static final String OUTPUT_TYPE = "OUTPUT_TYPE-";
+    private static final String CUSTOMER = "CUSTOMER";
+    private static final String ADDRESS = "ADDRESS";
+
     private final String inputTopic;
-    private final String successOutputTopic;
+    private final String customerOutputTopic;
+    private final String addressOutputTopic;
     private final String failureOutputTopic;
     private final SerdeCreator serdes;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -38,7 +44,8 @@ public class TopologyBuilder {
                            KafkaProducer<String, String> errorHandler) {
         this.serdes = serdes;
         this.inputTopic = applicationProperties.getProperty("input.topic");
-        this.successOutputTopic = applicationProperties.getProperty("success.output.topic");
+        this.customerOutputTopic = applicationProperties.getProperty("customer.output.topic");
+        this.addressOutputTopic = applicationProperties.getProperty("address.output.topic");
         this.failureOutputTopic = applicationProperties.getProperty("failure.output.topic");
         this.errorHandler = errorHandler;
     }
@@ -48,7 +55,7 @@ public class TopologyBuilder {
         final StreamsBuilder builder = new StreamsBuilder();
 
         log.debug("Subscribing to input topic {}", inputTopic);
-        builder.stream(inputTopic,
+        Map<String, KStream<String, GenericRecord>> streams = builder.stream(inputTopic,
                 Consumed.with(Serdes.String(), Serdes.String()))
                 .flatMap((k, v) -> {
                     try {
@@ -61,13 +68,14 @@ public class TopologyBuilder {
 
                         // get customer record from JSON node
                         Customer customer = new Customer();
-                        customer.setId(node.get("Id") != null ? node.get("Id").asText() : null);
+                        customer.setId(node.get("Id") != null ? node.get("Id").asText() : UUID.randomUUID().toString());
                         customer.setFirstName(node.get("FirstName") != null ? node.get("FirstName").asText() : null);
                         customer.setLastName(node.get("LastName") != null ? node.get("LastName").asText() : null);
+                        customer.setAge(node.get("Age") != null ? node.get("Age").intValue() : null);
                         records.add(new KeyValue<>(customer.getId(), customer));
 
                         // get address 1 record from JSON node
-                        final JsonNode address1 = node.get("Address1");
+                        final JsonNode address1 = node.get("Address");
                         if (address1 != null) {
                             Address address = getAddress(address1);
                             records.add(new KeyValue<>(address.getId(), address));
@@ -83,28 +91,34 @@ public class TopologyBuilder {
                         return records;
 
                     } catch (Exception e) {
-                        log.error(format("Error encountered transforming message [key=%s, value=%s]", k, v), e);
+                        String correlationId = UUID.randomUUID().toString();
+                        log.error(format("Error encountered transforming message [correlationId=%s, key=%s, value=%s]", correlationId, k, v), e);
                         // send message to dead letter queue and then send a null message down the stream to ignore this
                         // message
-                        errorHandler.send(new ProducerRecord<>(failureOutputTopic, k, v));
+                        List<Header> headers = Arrays.asList(new RecordHeader("Correlation-Id", correlationId.getBytes()));
+                        errorHandler.send(new ProducerRecord<>(failureOutputTopic, 0, k, v, headers));
                         return new ArrayList<>();
                     }
                 })
-                .to(successOutputTopic, Produced.with(Serdes.String(), serdes.createGenericSerde(false)));
+                .split(Named.as(OUTPUT_TYPE))
+                .branch((k, v) -> v.getSchema().getFullName().equals(Customer.class.getName()), Branched.as(CUSTOMER))
+                .branch((k, v) -> v.getSchema().getFullName().contains(Address.class.getName()), Branched.as(ADDRESS))
+                .noDefaultBranch();
+
+        streams.get(OUTPUT_TYPE + CUSTOMER).to(customerOutputTopic, Produced.with(Serdes.String(), serdes.createGenericSerde(false)));
+        streams.get(OUTPUT_TYPE + ADDRESS).to(addressOutputTopic, Produced.with(Serdes.String(), serdes.createGenericSerde(false)));
 
         return builder.build(streamProperties);
     }
 
     private Address getAddress(JsonNode node) {
         Address address = new Address();
-        address.setId(node.get("Id") != null ? node.get("Id").asText() : null);
-        address.setAddressLine1(node.get("AddressLine1") != null ? node.get("AddressLine1").asText() : null);
-        address.setAddressLine2(node.get("AddressLine2") != null ? node.get("AddressLine2").asText() : null);
-        address.setAddressLine3(node.get("AddressLine3") != null ? node.get("AddressLine3").asText() : null);
+        address.setId(node.get("Id") != null ? node.get("Id").asText() : UUID.randomUUID().toString());
+        address.setAddressLine1(node.get("Line1") != null ? node.get("Line1").asText() : null);
+        address.setAddressLine2(node.get("Line2") != null ? node.get("Line2").asText() : null);
         address.setCity(node.get("City") != null ? node.get("City").asText() : null);
         address.setState(node.get("State") != null ? node.get("State").asText() : null);
-        address.setCountry(node.get("Country") != null ? node.get("Country").asText() : null);
-        address.setPostalCode(node.get("PostalCode") != null ? node.get("PostalCode").asText() : null);
+        address.setPostalCode(node.get("Zip") != null ? node.get("Zip").asText() : null);
         return address;
     }
 }

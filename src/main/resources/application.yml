@@ -1,7 +1,8 @@
 application:
-  input.topic: input-topic
-  success.output.topic: success-topic
-  failure.output.topic: failure-topic
+  input.topic: ${INPUT_TOPIC}
+  customer.output.topic: ${CUSTOMER_TOPIC}
+  address.output.topic: ${ADDRESS_TOPIC}
+  failure.output.topic: ${FAILURE_TOPIC}
   state.store.cleanup: ${STATE_STORE_CLEANUP:false}
   in.memory.state.stores: ${MEMORY_STORES:false}
 
@@ -13,10 +14,10 @@ kafka:
     security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
     key.serializer: org.apache.kafka.common.serialization.StringSerializer
     value.serializer: org.apache.kafka.common.serialization.StringSerializer
-    ssl.keystore.location: ${KEYSTORE_LOCATION}
-    ssl.keystore.password: ${KEYSTORE_PASSWORD}
-    ssl.truststore.location: ${TRUSTSTORE_LOCATION}
-    ssl.truststore.password: ${KEYSTORE_PASSWORD}
+    ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
+    ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
+    ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
   streams:
     application.id: kstreams-example
     acks: all
@@ -54,11 +55,11 @@ kafka:
     key.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
     value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
     topology.optimzation: all
-    ssl.keystore.location: ${KEYSTORE_LOCATION}
-    ssl.keystore.password: ${KEYSTORE_PASSWORD}
-    ssl.truststore.location: ${TRUSTSTORE_LOCATION}
-    ssl.truststore.password: ${KEYSTORE_PASSWORD}
-    schema.registry.ssl.keystore.location: ${KEYSTORE_LOCATION}
-    schema.registry.ssl.keystore.password: ${KEYSTORE_PASSWORD}
-    schema.registry.ssl.truststore.location: ${TRUSTSTORE_LOCATION}
-    schema.registry.ssl.truststore.password: ${KEYSTORE_PASSWORD}
+    ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
+    ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
+    ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    schema.registry.ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
+    schema.registry.ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    schema.registry.ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
+    schema.registry.ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
