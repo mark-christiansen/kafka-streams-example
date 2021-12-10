@@ -22,7 +22,8 @@ public class TestDataHelper {
                 createAddress("11", "2880 Broadway", "", "", "New York", "NY", "US", "10025"));
         String value = customer.toString();
         String encodedValue = new String(Base64.getEncoder().encode(value.getBytes()));
-        return new KeyValue<>(key, encodedValue);
+        // the value being sent in their actual environment is a base64 encoded JSON string surrounded by double quotes
+        return new KeyValue<>(key, "\"" + encodedValue + "\"");
     }
 
     public KeyValue<String, String> createCustomerEncodedJson() {
@@ -30,7 +31,8 @@ public class TestDataHelper {
         ObjectNode customer = createCustomer("1", "Jerry", "Seinfeld", 70, null, null);
         String value = customer.toString();
         String encodedValue = new String(Base64.getEncoder().encode(value.getBytes()));
-        return new KeyValue<>(key, encodedValue);
+        // the value being sent in their actual environment is a base64 encoded JSON string surrounded by double quotes
+        return new KeyValue<>(key, "\"" + encodedValue + "\"");
     }
 
     public void assertCustomerEqual(String encodedJson,
@@ -38,7 +40,11 @@ public class TestDataHelper {
                                     GenericRecord address1,
                                     GenericRecord address2) throws JsonProcessingException {
 
-        String json = new String(Base64.getDecoder().decode(encodedJson));
+        String jsonMinusQuotes = encodedJson;
+        if (encodedJson.startsWith("\"") && encodedJson.endsWith("\"")) {
+            jsonMinusQuotes = encodedJson.substring(1, encodedJson.length()-1);
+        }
+        String json = new String(Base64.getDecoder().decode(jsonMinusQuotes));
         JsonNode node = objectMapper.readTree(json);
 
         assertStringEqual(node.get("Id"), (String) customer.get("id"));

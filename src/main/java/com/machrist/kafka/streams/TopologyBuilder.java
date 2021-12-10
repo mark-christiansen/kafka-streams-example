@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static java.lang.String.format;
+import static java.lang.String.valueOf;
 
 public class TopologyBuilder {
 
@@ -62,8 +63,14 @@ public class TopologyBuilder {
 
                         List<KeyValue<String, GenericRecord>> records = new ArrayList<>();
 
+                        // the value is a bas64 string surrounded in double quotes - first strip the quotes out
+                        String valueMinusQuotes = v;
+                        if (v.startsWith("\"") && v.endsWith("\"")) {
+                            valueMinusQuotes = v.substring(1, v.length()-1);
+                        }
+
                         // Base64 decode the incoming string message and read as JSON node tree
-                        String json = new String(Base64.getDecoder().decode(v));
+                        String json = new String(Base64.getDecoder().decode(valueMinusQuotes));
                         JsonNode node = objectMapper.readTree(json);
 
                         // get customer record from JSON node

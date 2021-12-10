@@ -109,7 +109,7 @@ public class StreamTests {
         final ArgumentCaptor<ProducerRecord<String, String>> kafkaProducerCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
 
         String key = "1";
-        String value = "!@#$";
+        String value = "\"!@#$\"";
         inputTopic.pipeInput(key, value);
 
         // verify the producer send was called - only called if exceptions occur
@@ -137,7 +137,7 @@ public class StreamTests {
         final ArgumentCaptor<ProducerRecord<String, String>> kafkaProducerCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
 
         String key = "1";
-        String value = "123ABC";
+        String value = "\"123ABC\"";
         inputTopic.pipeInput(key, value);
 
         // verify the producer send was called - only called if exceptions occur
@@ -164,7 +164,7 @@ public class StreamTests {
 
         String key = "1";
         // {"FirstName":"FN354","LastName":"LN8987","Age":12,"Address":{"Line1":"3942 Sesame Street","Line2":null,"City":"Omaha","State":"NE","Zip":62447}}
-        String value = "eyJGaXJzdE5hbWUiOiJGTjM1NCIsIkxhc3ROYW1lIjoiTE44OTg3IiwiQWdlIjoxMiwiQWRkcmVzcyI6eyJMaW5lMSI6IjM5NDIgU2VzYW1lIFN0cmVldCIsIkxpbmUyIjpudWxsLCJDaXR5IjoiT21haGEiLCJTdGF0ZSI6Ik5FIiwiWmlwIjo2MjQ0N319";
+        String value = "\"eyJGaXJzdE5hbWUiOiJGTjM1NCIsIkxhc3ROYW1lIjoiTE44OTg3IiwiQWdlIjoxMiwiQWRkcmVzcyI6eyJMaW5lMSI6IjM5NDIgU2VzYW1lIFN0cmVldCIsIkxpbmUyIjpudWxsLCJDaXR5IjoiT21haGEiLCJTdGF0ZSI6Ik5FIiwiWmlwIjo2MjQ0N319\"";
         inputTopic.pipeInput(key, value);
 
         // verify the producer send wasn't called - only called if exceptions occur
