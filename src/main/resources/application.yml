@@ -9,7 +9,7 @@ application:
 # Kafka Streams related properties
 kafka:
   producer:
-    application.id: kstreams-example-error
+    application.id: ${APPLICATION_ID}
     bootstrap.servers: ${KAFKA_BROKER_URL}
     security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
     key.serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -19,7 +19,7 @@ kafka:
     ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
     ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
   streams:
-    application.id: kstreams-example
+    application.id: ${APPLICATION_ID}
     acks: all
     auto.reset.offset: earliest
     # broker connection configuration
