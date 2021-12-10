@@ -16,11 +16,19 @@ public class TestDataHelper {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public KeyValue<String, String> createValidEncodedJson() {
+    public KeyValue<String, String> createFullCustomerEncodedJson() {
         String key = "1";
         ObjectNode customer = createCustomer("1", "Jerry", "Seinfeld",
                 createAddress("10", "129 West 81st Street", "Apartment 5A", "", "New York", "NY", "US", "10025"),
                 createAddress("11", "2880 Broadway", "", "", "New York", "NY", "US", "10025"));
+        String value = customer.toString();
+        String encodedValue = new String(Base64.getEncoder().encode(value.getBytes()));
+        return new KeyValue<>(key, encodedValue);
+    }
+
+    public KeyValue<String, String> createCustomerEncodedJson() {
+        String key = "1";
+        ObjectNode customer = createCustomer("1", "Jerry", "Seinfeld", null, null);
         String value = customer.toString();
         String encodedValue = new String(Base64.getEncoder().encode(value.getBytes()));
         return new KeyValue<>(key, encodedValue);
@@ -61,8 +69,12 @@ public class TestDataHelper {
         objectNode.put("Id", id);
         objectNode.put("FirstName", firstName);
         objectNode.put("LastName", lastName);
-        objectNode.set("Address1", address1);
-        objectNode.set("Address2", address2);
+        if (address1 != null) {
+            objectNode.set("Address1", address1);
+        }
+        if (address2 != null) {
+            objectNode.set("Address2", address2);
+        }
         return objectNode;
     }
 

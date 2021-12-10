@@ -14,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +29,7 @@ public class StreamTests {
     private TestStream stream;
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() {
         Properties appProps = testStreamHelper.getApplicationProperties();
         this.stream = testStreamHelper.createTestStream(appProps, APPLICATION_ID, SCHEMA_REGISTRY_URL);
     }
@@ -42,14 +41,14 @@ public class StreamTests {
 
     @Test
     @DisplayName("Stream valid bae64 encoded JSON string with customer, address1 and address2 data")
-    public void testStreamValid() throws JsonProcessingException {
+    public void testStreamValidFullCustomer() throws JsonProcessingException {
 
         TestInputTopic<String, String> inputTopic = stream.getInputTopic();
         TestOutputTopic<String, GenericRecord> successOutputTopic = stream.getSuccessOutputTopic();
         KafkaProducer<String, String> kafkaProducer = stream.getKafkaProducer();
         TestDataHelper dataHelper = new TestDataHelper();
 
-        KeyValue<String, String> json = dataHelper.createValidEncodedJson();
+        KeyValue<String, String> json = dataHelper.createFullCustomerEncodedJson();
         inputTopic.pipeInput(json.key, json.value);
 
         // verify the producer send wasn't called - only called if exceptions occur
@@ -64,6 +63,28 @@ public class StreamTests {
         TestRecord<String, GenericRecord> address2 = successOutputTopic.readRecord();
 
         dataHelper.assertCustomerEqual(json.value, customer.getValue(), address1.getValue(), address2.getValue());
+    }
+
+    @Test
+    @DisplayName("Stream valid bae64 encoded JSON string with customer but no address data")
+    public void testStreamValidCustomerWithNoAddresses() throws JsonProcessingException {
+
+        TestInputTopic<String, String> inputTopic = stream.getInputTopic();
+        TestOutputTopic<String, GenericRecord> successOutputTopic = stream.getSuccessOutputTopic();
+        KafkaProducer<String, String> kafkaProducer = stream.getKafkaProducer();
+        TestDataHelper dataHelper = new TestDataHelper();
+
+        KeyValue<String, String> json = dataHelper.createCustomerEncodedJson();
+        inputTopic.pipeInput(json.key, json.value);
+
+        // verify the producer send wasn't called - only called if exceptions occur
+        verify(kafkaProducer, times(0));
+
+        // should have received three records - customer, address1 nd address2
+        assertFalse(successOutputTopic.isEmpty(), "success topic is empty");
+        TestRecord<String, GenericRecord> customer = successOutputTopic.readRecord();
+        dataHelper.assertCustomerEqual(json.value, customer.getValue(), null, null);
+        assertTrue(successOutputTopic.isEmpty(), "success topic is not empty");
     }
 
     @Test
