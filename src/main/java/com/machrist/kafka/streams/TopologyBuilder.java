@@ -33,6 +33,7 @@ public class TopologyBuilder {
 
     private final String inputTopic;
     private final String outputTopic;
+    private final int outputTopicSchemaId;
     private final String failureOutputTopic;
     private final SerdeCreator serdes;
     private final KafkaProducer<Long, GenericRecord> errorHandler;
@@ -45,6 +46,7 @@ public class TopologyBuilder {
         this.serdes = serdes;
         this.inputTopic = applicationProperties.getProperty("input.topic");
         this.outputTopic = applicationProperties.getProperty("output.topic");
+        this.outputTopicSchemaId = Integer.parseInt(applicationProperties.getProperty("output.topic.schema.id"));
         this.failureOutputTopic = applicationProperties.getProperty("failure.output.topic");
         this.errorHandler = errorHandler;
         this.schemaRegistryClient = schemaRegistryClient;
@@ -56,8 +58,7 @@ public class TopologyBuilder {
         // String subject = outputTopic + "-value";
         // final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getLatestSchemaMetadata(subject).getSchema());
         // get output schema by ID
-        final int schemaId = 2;
-        final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getSchemaById(schemaId).canonicalString());
+        final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getSchemaById(outputTopicSchemaId).canonicalString());
 
         log.info("Subscribing to input topic {}", inputTopic);
         final StreamsBuilder builder = new StreamsBuilder();

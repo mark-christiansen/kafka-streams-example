@@ -4,6 +4,7 @@ application:
   failure.output.topic: env.app.failures
   state.store.cleanup: false
   in.memory.state.stores: false
+  output.topic.schema.id: 3
 
 # Kafka Streams related properties
 kafka:
