@@ -24,7 +24,7 @@ public class StreamsLifecycle {
     public StreamsLifecycle(String applicationId,
                             Topology topology,
                             boolean stateStoreCleanup,
-                           Properties streamsProperties) {
+                            Properties streamsProperties) {
         this.topology = topology;
         this.applicationId = applicationId;
         this.stateStoreCleanup = stateStoreCleanup;

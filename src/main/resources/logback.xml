@@ -8,10 +8,25 @@
         </encoder>
     </appender>
 
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>c:/logs/timeBasedlogFile.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>/Users/markchristiansen/logs/streams-app.%d{yyyy-MM-dd-HH-mm}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="org.apache.kafka" level="error" />
+    <logger name="io.confluent" level="error" />
     <logger name="com.machrist.kafka.streams" level="info" />
 
     <root level="error">
+        <appender-ref ref="file"/>
         <appender-ref ref="stdout"/>
     </root>
 </configuration>

@@ -15,9 +15,6 @@ import java.util.Properties;
 public class SerdeCreator {
 
     private static final String SCHEMA_REGISTRY_AUTH = "schema.registry.auth";
-    private static final String BASIC_AUTH_CREDENTIALS_SOURCE = "basic.auth.credentials.source";
-    private static final String BASIC_AUTH_USER_INFO = "basic.auth.user.info";
-
 
     private final Properties kafkaProps;
     private final SchemaRegistryClient client;
@@ -49,11 +46,19 @@ public class SerdeCreator {
 
         boolean auth = Boolean.parseBoolean(kafkaProps.getProperty(SCHEMA_REGISTRY_AUTH));
         if (auth) {
-            serdeConfig.put(BASIC_AUTH_CREDENTIALS_SOURCE, kafkaProps.get(BASIC_AUTH_CREDENTIALS_SOURCE));
-            serdeConfig.put(BASIC_AUTH_USER_INFO, kafkaProps.get(BASIC_AUTH_USER_INFO));
+            serdeConfig.put(AbstractKafkaSchemaSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
+                    kafkaProps.get(AbstractKafkaSchemaSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE));
+            serdeConfig.put(AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG,
+                    kafkaProps.get(AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG));
         }
 
-        serdeConfig.put("schema.registry.ssl", kafkaProps.get(BASIC_AUTH_CREDENTIALS_SOURCE));
+        serdeConfig.put("ssl.keystore.location", kafkaProps.get("ssl.keystore.location"));
+        serdeConfig.put("ssl.keystore.password", kafkaProps.get("ssl.keystore.password"));
+        serdeConfig.put("ssl.truststore.location", kafkaProps.get("ssl.truststore.location"));
+        serdeConfig.put("ssl.truststore.password", kafkaProps.get("ssl.truststore.password"));
+        serdeConfig.put("auto.register.schemas", kafkaProps.get("auto.register.schemas"));
+        serdeConfig.put("use.latest.version", kafkaProps.get("use.latest.version"));
+        serdeConfig.put("latest.compatibility.strict", kafkaProps.get("latest.compatibility.strict"));
 
         return serdeConfig;
     }

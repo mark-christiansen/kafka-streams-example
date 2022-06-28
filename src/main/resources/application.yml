@@ -1,65 +1,74 @@
 application:
-  input.topic: ${INPUT_TOPIC}
-  customer.output.topic: ${CUSTOMER_TOPIC}
-  address.output.topic: ${ADDRESS_TOPIC}
-  failure.output.topic: ${FAILURE_TOPIC}
-  state.store.cleanup: ${STATE_STORE_CLEANUP:false}
-  in.memory.state.stores: ${MEMORY_STORES:false}
+  input.topic: env.app.person
+  output.topic: env.app.person-transform
+  failure.output.topic: env.app.failures
+  state.store.cleanup: false
+  in.memory.state.stores: false
 
 # Kafka Streams related properties
 kafka:
   producer:
-    application.id: ${APPLICATION_ID}
-    bootstrap.servers: ${KAFKA_BROKER_URL}
-    security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
-    key.serializer: org.apache.kafka.common.serialization.StringSerializer
-    value.serializer: org.apache.kafka.common.serialization.StringSerializer
-    ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
-    ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
-    ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
-    ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    application.id: error-producer
+    bootstrap.servers: localhost:9092
+    security.protocol: SASL_SSL
+    sasl.mechanism: PLAIN
+    sasl.jaas.config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="kafka" password="kafka-secret";'
+    key.serializer: org.apache.kafka.common.serialization.LongSerializer
+    value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+    ssl.truststore.location: /Users/markchristiansen/repos/github.com/objectpartners/confluent-platform-toolkit/certs/kafka1.mycompany.com.truststore.jks
+    ssl.truststore.password: serverpassword
+    schema.registry.url: https://localhost:8081
+    schema.registry.ssl.truststore.location: /Users/markchristiansen/repos/github.com/objectpartners/confluent-platform-toolkit/certs/kafka1.mycompany.com.truststore.jks
+    schema.registry.ssl.truststore.password: serverpassword
+    basic.auth.credentials.source: USER_INFO
+    basic.auth.user.info: admin:admin-secret
   streams:
-    application.id: ${APPLICATION_ID}
+    application.id: streams-app
+    group.id: streams-group
     acks: all
     auto.reset.offset: earliest
     # broker connection configuration
-    bootstrap.servers: ${KAFKA_BROKER_URL}
-    security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
+    bootstrap.servers: localhost:9092
+    security.protocol: SASL_SSL
+    sasl.mechanism: PLAIN
+    sasl.jaas.config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="kafka" password="kafka-secret";'
     default.key.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
     default.value.serde: io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
     default.timestamp.extractor: org.apache.kafka.streams.processor.WallclockTimestampExtractor
     default.deserialization.exception.handler: org.apache.kafka.streams.errors.LogAndFailExceptionHandler
     default.production.exception.handler: org.apache.kafka.streams.errors.DefaultProductionExceptionHandler
     # for changelog topics and repartition topics, match other topics to guarantee fault tolerance
-    replication.factor: ${REPLICATION_FACTOR:1}
+    replication.factor: -1
     request.timeout.ms: 60000
     session.timeout.ms: 30000
-    processing.guarantee: at_least_once
+    isolation.level: read_committed
+    processing.guarantee: exactly_once_beta
     retries: 2147483647
+    enabled.idempotence: true
     max.in.flight.requests.per.connection: 1
     buffered.records.per.partition: 1000
     commit.interval.ms: 5000
-    num.stream.threads: ${NUM_THREADS:1}
+    num.stream.threads: 1
     poll.ms: 100
     cache.max.bytes.buffering: 10485760
     # state store configuration
-    state.dir: ${STATE_DIR:/data/stores}
-    num.standby.replicas: ${NUM_STANDBY_REPLICAS:0}
-    min.insync.replicas: ${MIN_INSYNC_REPLICAS:0}
+    state.dir: /tmp/streams
+    num.standby.replicas: 0
+    min.insync.replicas: 0
     # schema registry configuration
-    schema.registry.url: ${SCHEMA_REGISTRY_URL}
-    schema.registry.auth: ${SCHEMA_REGISTRY_AUTH:false}
+    schema.registry.url: https://localhost:8081
+    schema.registry.auth: true
     schema.cache.capacity: 2000
-    basic.auth.credentials.source: ${BASIC_AUTH_CRED_SOURCE}
-    basic.auth.user.info: ${BASIC_AUTH_USER_INFO}
-    key.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
-    value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
-    topology.optimzation: all
-    ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
-    ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
-    ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
-    ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
-    schema.registry.ssl.keystore.location: ${KEYSTORE_LOCATION:/mnt/sslcerts/keystore.p12}
-    schema.registry.ssl.keystore.password: ${KEYSTORE_PASSWORD:mystorepassword}
-    schema.registry.ssl.truststore.location: ${TRUSTSTORE_LOCATION:/mnt/sslcerts/truststore.p12}
-    schema.registry.ssl.truststore.password: ${KEYSTORE_PASSWORD:mystorepassword}
+    basic.auth.credentials.source: USER_INFO
+    basic.auth.user.info: admin:admin-secret
+    #key.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    #value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    topology.optimization: all
+    ssl.truststore.location: /Users/markchristiansen/repos/github.com/objectpartners/confluent-platform-toolkit/certs/kafka1.mycompany.com.truststore.jks
+    ssl.truststore.password: serverpassword
+    schema.registry.ssl.truststore.location: /Users/markchristiansen/repos/github.com/objectpartners/confluent-platform-toolkit/certs/kafka1.mycompany.com.truststore.jks
+    schema.registry.ssl.truststore.password: serverpassword
+    auto.register.schemas: false
+    use.latest.version: true
+    latest.compatibility.strict: false
+
