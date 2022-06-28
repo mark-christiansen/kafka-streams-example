@@ -52,8 +52,12 @@ public class TopologyBuilder {
 
     public Topology build(Properties streamProperties) throws RestClientException, IOException {
 
-        String subject = outputTopic + "-value";
-        final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getLatestSchemaMetadata(subject).getSchema());
+        // uncomment to get output schema by latest version
+        // String subject = outputTopic + "-value";
+        // final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getLatestSchemaMetadata(subject).getSchema());
+        // get output schema by ID
+        final int schemaId = 2;
+        final Schema outputTopicSchema = new Schema.Parser().parse(this.schemaRegistryClient.getSchemaById(schemaId).canonicalString());
 
         log.info("Subscribing to input topic {}", inputTopic);
         final StreamsBuilder builder = new StreamsBuilder();
