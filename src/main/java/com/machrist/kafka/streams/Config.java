@@ -5,6 +5,7 @@ import com.machrist.kafka.streams.util.SerdeCreator;
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.streams.Topology;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -77,11 +78,11 @@ public class Config {
 
     @Bean
     public TopologyBuilder topologyBuilder() {
-        return new TopologyBuilder(applicationProperties(), serdeCreator(), new KafkaProducer<>(producerProperties()));
+        return new TopologyBuilder(applicationProperties(), serdeCreator(), new KafkaProducer<>(producerProperties()), schemaRegistryClient());
     }
 
     @Bean
-    public StreamsLifecycle streamsLifecycle(ApplicationContext applicationContext) {
+    public StreamsLifecycle streamsLifecycle(ApplicationContext applicationContext) throws RestClientException, IOException {
 
         TopologyBuilder topologyBuilder = topologyBuilder();
 

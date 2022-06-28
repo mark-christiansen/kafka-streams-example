@@ -1,6 +1,6 @@
 application:
   input.topic: env.app.person
-  output.topic: env.app.person-transform
+  output.topic: env.app.fullname
   failure.output.topic: env.app.failures
   state.store.cleanup: false
   in.memory.state.stores: false
@@ -24,7 +24,7 @@ kafka:
     basic.auth.user.info: admin:admin-secret
   streams:
     application.id: streams-app
-    group.id: streams-group
+    group.id: fullname-streams-app
     acks: all
     auto.reset.offset: earliest
     # broker connection configuration
